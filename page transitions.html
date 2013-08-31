@@ -13,16 +13,16 @@
 			min-height: 100%; 
 			position: absolute; 
 			display: none; 
+			overflow: hidden;
 			border: 0;
 		}
 		
 		div[data-role="page"].ui-page-active { 
 			display: block; 
-			overflow: visible; 
 		}
 	</style>
 </head>
-<body>
+<body style="overflow:hidden">
 	<div data-role="page" id="page0" style="background-color:red">
 		<h1>Page 1</h1>
 		<a href="#" id="next">Next</a>
@@ -50,6 +50,10 @@
 	</div>
 	
 	<script>
+		String.prototype.repeat = function(num) {
+			return new Array(num + 1).join(this);
+		};
+
 		var numPages,
 			started,
 			$prev,
@@ -73,6 +77,12 @@
 				$prevBtn.on('click', function() {
 					loadPage($prevPage);
 				});			
+				
+				/*
+				var p = document.createElement('p');
+				p.innerText = "blah blah ".repeat(2000);
+				$this.append(p);
+				*/
 			});
 			
 			loadPage($('#page0'));
@@ -80,7 +90,7 @@
 		
 		function randomTransition() {
 			return window.transitions[transitionNames[parseInt(Math.random() * transitionNames.length)]];
-			//return transitions.skewRight;
+			//return transitions.up;
 		}
 
 		function loadPage($page) {

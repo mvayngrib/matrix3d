@@ -20,7 +20,7 @@
 				fromPageTransition: function() {
 					return translation(-$wnd.width());
 				},
-				toPageBeforeTransition: function() {
+				toPageBeforeTransition: function(to) {
 					return translation($wnd.width());
 				}
 			},
@@ -37,7 +37,7 @@
 					return translation(0, -$wnd.height());
 				},
 				toPageBeforeTransition: function() {
-					return translation(0, $wnd.height());
+					return translation(0, window.innerHeight + window.scrollY);
 				}					
 			},
 			down: {
