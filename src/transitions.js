@@ -1,94 +1,205 @@
 (function(window) {
+  String.prototype.format = function() {
+    var args = arguments;
+    return this.replace(/{(\d+)}/g, function(match, number) { 
+      return typeof args[number] != 'undefined'
+        ? args[number]
+        : match
+      ;
+    });
+  };
+
 	var i = 0, 
 		started,
 		$prev, 
 		$page, 
 		$next,
 		$wnd = $(window),
+		cssIndentityTransform = 'matrix(1, 0, 0, 1, 0, 0)',
+		identityMatrix,
+		vendorPrefixes = ['', '-moz-', '-ms-', '-o-', '-webkit-'],
 		transitions = {
 			none: {
-				fromPageTransition: function() {
-					return identity();
-					//return identityTransition(); // reuse
-				},
-				toPageBeforeTransition: function() {
-					return identity();
-					//return identityTransition();
-				}
+	      tween: {
+  				fromPageTransition: function() {
+  					return identityMatrix;
+  					//return identityTransition(); // reuse
+  				},
+  				toPageBeforeTransition: function() {
+  					return identityMatrix;
+  					//return identityTransition();
+  				}
+	      },
+	      css: {
+          fromPageTransition: function() {
+            return cssIndentityTransform;
+          },
+          toPageBeforeTransition: function() {
+            return cssIndentityTransform;
+          }	        
+	      }
 			},
 			left: {
-				fromPageTransition: function() {
-					return translation(-$wnd.width());
-				},
-				toPageBeforeTransition: function() {
-					return translation($wnd.width());
-				}
+				tween: {
+  			  fromPageTransition: function() {
+  					return translation(-$wnd.width());
+  				},
+  				toPageBeforeTransition: function(to) {
+  					return translation($wnd.width());
+  				}
+			  },
+			  css: {
+          fromPageTransition: function() {
+            return 'translateX({0}px)'.format(-$wnd.width());
+          },
+          toPageBeforeTransition: function(to) {
+            return 'translateX({0}px)'.format($wnd.width());
+          }			    
+			  }
 			},
 			right: {
-				fromPageTransition: function() {
-					return translation($wnd.width());
-				},
-				toPageBeforeTransition: function() {
-					return translation(-$wnd.width());
-				}
+			  tween: {
+  				fromPageTransition: function() {
+  					return translation($wnd.width());
+  				},
+  				toPageBeforeTransition: function() {
+  					return translation(-$wnd.width());
+  				}
+			  },
+        css: {
+          fromPageTransition: function() {
+          return 'translateX({0}px)'.format($wnd.width());
+          },
+          toPageBeforeTransition: function(to) {
+            return 'translateX({0}px)'.format(-$wnd.width());
+          }         
+        }
 			},
 			up: {
-				fromPageTransition: function() {
-					return translation(0, -$wnd.height());
-				},
-				toPageBeforeTransition: function() {
-					return translation(0, $wnd.height());
-				}					
+			  tween: {
+  				fromPageTransition: function() {
+  					return translation(0, -$wnd.height());
+  				},
+  				toPageBeforeTransition: function() {
+  					return translation(0, window.innerHeight + window.scrollY);
+  				}
+			  },
+        css: {
+          fromPageTransition: function() {
+            return 'translateY({0}px)'.format(-$wnd.height());
+          },
+          toPageBeforeTransition: function(to) {
+            return 'translateY({0}px)'.format($wnd.height());
+          }         
+        }
 			},
 			down: {
-				fromPageTransition: function() {
-					return translation(0, $wnd.height());
-				},
-				toPageBeforeTransition: function() {
-					return translation(0, -$wnd.height());
-				}					
+			  tween: {
+  				fromPageTransition: function() {
+  					return translation(0, $wnd.height());
+  				},
+  				toPageBeforeTransition: function() {
+  					return translation(0, -$wnd.height());
+  				}
+			  },
+        css: {
+          fromPageTransition: function() {
+            return 'translateY({0}px)'.format($wnd.height());
+          },
+          toPageBeforeTransition: function(to) {
+            return 'translateY({0}px)'.format(-$wnd.height());
+          }         
+        }
 			},
 			zoomIn: {
-				fromPageTransition: function() {
-					return identity();
-	//						return identityTransition();
-				},
-				toPageBeforeTransition: function() {
-					return scale(0, 0);
-				}
+			  tween: {
+  				fromPageTransition: function() {
+  					return identityMatrix;
+  				},
+  				toPageBeforeTransition: function() {
+  					return scale(0, 0);
+  				}
+			  },
+        css: {
+          fromPageTransition: function() {
+            return cssIndentityTransform;
+          },
+          toPageBeforeTransition: function(to) {
+            return 'matrix(0, 0, 0, 0, 0, 0)';
+          }         
+        }
 			},
 			downLeft: {
-				fromPageTransition: function() {
-					//return identity();
-					return transitions.upRight.toPageBeforeTransition();
-				},
-				toPageBeforeTransition: function() {
-					return translation($wnd.width(), -$wnd.height());
-				}					
+			  tween: {
+  				fromPageTransition: function() {
+  					return transitions.upRight.tween.toPageBeforeTransition();
+  				},
+  				toPageBeforeTransition: function() {
+  					return translation($wnd.width(), -$wnd.height());
+  				}
+			  },
+        css: {
+          fromPageTransition: function() {
+            return transitions.upRight.css.toPageBeforeTransition();
+          },
+          toPageBeforeTransition: function() {
+            return 'translate({0}px, {1}px)'.format($wnd.width(), -$wnd.height());
+          }
+        }
 			},
 			downRight: {
-				fromPageTransition: function() {
-					return transitions.upLeft.toPageBeforeTransition();
-				},
-				toPageBeforeTransition: function() {
-					return translation(-$wnd.width(), -$wnd.height());
-				}					
+			  tween: {
+  				fromPageTransition: function() {
+  					return transitions.upLeft.tween.toPageBeforeTransition();
+  				},
+  				toPageBeforeTransition: function() {
+  					return translation(-$wnd.width(), -$wnd.height());
+  				}
+			  },
+			  css: {
+          fromPageTransition: function() {
+            return transitions.upLeft.css.toPageBeforeTransition();
+          },
+          toPageBeforeTransition: function() {
+            return 'translate({0}px, {1}px)'.format(-$wnd.width(), -$wnd.height());
+          }			    
+			  }
 			},
 			upLeft: {
-				fromPageTransition: function() {
-					return transitions.downRight.toPageBeforeTransition();
-				},
-				toPageBeforeTransition: function() {
-					return translation($wnd.width(), $wnd.height());
-				}					
+			  tween: {
+  				fromPageTransition: function() {
+  					return transitions.downRight.tween.toPageBeforeTransition();
+  				},
+  				toPageBeforeTransition: function() {
+  					return translation($wnd.width(), $wnd.height());
+  				}					
+        },
+        css: {
+          fromPageTransition: function() {
+            return transitions.downRight.css.toPageBeforeTransition();
+          },
+          toPageBeforeTransition: function() {
+            return 'translate({0}px, {1}px)'.format($wnd.width(), $wnd.height());
+          }         
+        }
 			},
 			upRight: {
-				fromPageTransition: function() {
-					return transitions.downLeft.toPageBeforeTransition();
-				},
-				toPageBeforeTransition: function() {
-					return translation(-$wnd.width(), $wnd.height());
-				}					
+			  tween: {
+  				fromPageTransition: function() {
+  					return transitions.downLeft.tween.toPageBeforeTransition();
+  				},
+  				toPageBeforeTransition: function() {
+  					return translation(-$wnd.width(), $wnd.height());
+  				}					
+        },
+        css: {
+          fromPageTransition: function() {
+            return transitions.downLeft.css.toPageBeforeTransition();
+          },
+          toPageBeforeTransition: function() {
+            return 'translate({0}px, {1}px)'.format(-$wnd.width(), $wnd.height());
+          }         
+        }
 			}
 			/*,
 			skewRight: {
@@ -101,6 +212,15 @@
 			},*/
 
 		};
+
+  function setStylePropertyValues(style, propMap) {
+    for (var prop in propMap) {
+      var value = propMap[prop];
+      for (var i = 0; i < vendorPrefixes.length; i++) {
+        style[vendorPrefixes[i] + prop] = value;
+      }
+    }
+  }
 
 	function Transition() {
 		this._sequence = [];
@@ -142,37 +262,49 @@
 		
 		return tween;
 	};
-			
-	function toPageTransition(to) {
-		return identity();
-	};
+	
+	var defaults = {
+	  tween: {
+    	defaultToPageTransition: function(to) {
+    		return identityMatrix;
+    	}
+	  },
+	  css : {
+      defaultToPageTransition: function(to) {
+        return cssIndentityTransform;
+      }	    
+	  }
+	}
 
 	for (var name in transitions) {
 		var trans = transitions[name];
-		if (!trans.toPageTransition)
-			trans.toPageTransition = toPageTransition;
+		for (var type in trans) {
+		  var transForType = trans[type];
+  		if (!transForType.toPageTransition)
+  			transForType.toPageTransition = defaults[type].defaultToPageTransition;
+		}
 	}
 
-	cssTweener = createjs.CSSPlugin;
-	transformer = createjs.Matrix3DPlugin;			
-	createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
-	transformer.install(createjs.Tween);
-	//		cssTweener.install(createjs.Tween);
-			
-	Matrix.prototype.scale = function() {
-		if (!this.isSquare())
-			throw "only a square matrix can be scaled uniformly";
-			
-		var rows = this.rows(),
-			m = Matrix.Zero(rows, rows),
-			elements = m.elements;
-			
-		for (var i = 0; i < rows; i++) {
-			m.elements[i][i] = arguments[i] || 1;
-		}
-		
-		return this.multiply(m);
-	};
+//	cssTweener = createjs.CSSPlugin;
+//	transformer = createjs.Matrix3DPlugin;			
+//	createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
+//	transformer.install(createjs.Tween);
+////		cssTweener.install(createjs.Tween);
+//			 
+//	Matrix.prototype.scale = function() {
+//		if (!this.isSquare())
+//			throw "only a square matrix can be scaled uniformly";
+//			
+//		var rows = this.rows(),
+//			m = Matrix.Zero(rows, rows),
+//			elements = m.elements;
+//			
+//		for (var i = 0; i < rows; i++) {
+//			m.elements[i][i] = arguments[i] || 1;
+//		}
+//		
+//		return this.multiply(m);
+//	};
 
 	function translation(x, y, z) {
 		var i = identity();
@@ -184,28 +316,67 @@
 		return matrix.x(translation(x, y, z));
 	}
 
-	function doTransition(from, to, transition, ease) {
-		var speed = 1000;
-			complete = false;
-			
-		function onComplete() {
-			if (!complete) {
-				complete = true;
-				if (from)
-					$(from).removeClass('ui-page-active');
-			}
-		}
+	var doTransition = {
+	  tween: function(from, to, transition, ease, duration, doTween) {
+  		duration = duration || 1000;
+  		ease = ease || createjs.Ease.sineInOut;
+  		
+  		var complete = false,
+  		    type = doTween ? 'tween' : 'css';
+  			
+  		function onComplete() {
+  			if (!complete) {
+  				complete = true;
+  				if (from)
+  					$(from).removeClass('ui-page-active');
+  			}
+  		}
+  
+  		$(to).addClass('ui-page-active');
+  		transform(to, transition.toPageBeforeTransition(to));
+  		if (from)
+  			transform(from, transition.fromPageTransition(), duration, ease).call(onComplete);
+  
+		  transform(to, transition.toPageTransition(to), duration, ease);
+  		
+  		if (!from)
+  			onComplete();
+	  },
+	  css: function(from, to, transition, ease, duration) {
+      duration = duration || 1000;
+      ease = ease || 'all {0}ms {1}'.format(duration, ease || 'ease-in-out');
+      var complete;
+      
+      function onComplete() {
+        if (!complete) {
+          complete = true;
+          if (from)
+            $(from).removeClass('ui-page-active');
+        }
+      }
 
-		ease = ease || createjs.Ease.sineInOut;
-		transform(to, transition.toPageBeforeTransition(to));
-		if (from)
-			transform(from, transition.fromPageTransition(), speed, ease).call(onComplete);
-
-		$(to).addClass('ui-page-active');
-		transform(to, transition.toPageTransition(), speed, ease).call(onComplete);
-		
-		if (!from)
-			onComplete();
+      setStylePropertyValues(to.style, {
+        transform: transition.toPageBeforeTransition(to)
+      });
+      
+      $(to).addClass('ui-page-active');
+      if (from) {
+        setStylePropertyValues(from.style, {
+          transition: ease,
+          transform: transition.fromPageTransition()
+        });
+      }
+      
+      setStylePropertyValues(to.style, {
+        transition: ease,
+        transform: transition.toPageTransition(to)
+      });
+      
+      if (!from)
+        onComplete();
+      else
+        setTimeout(onComplete, duration);
+	  }
 	}
 
 	function position(what, where) {
@@ -239,8 +410,14 @@
 		]);
 	}
 
+	function identity() {
+	  return identityMatrix || (identityMatrix = Matrix.I(4));
+	}
+	
 	function setTransform(el, matrix) {
-		transformer.setStylePropertyValue(el.style, 'transform', transformer.toMatrix3DString(matrix));
+		transformer.setStylePropertyValues(el.style, {
+		  transform: transformer.toMatrix3DString(matrix)
+		});
 	}
 
 	function transform(el, matrix, speed, ease) {
@@ -254,10 +431,6 @@
 			transform: matrix
 		}, speed, ease);
 	}
-
-	function identity() {
-		return Matrix.I(4);
-	}		
 
 	function identityTransition(el) {
 		return new Transition(el);

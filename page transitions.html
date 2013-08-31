@@ -1,28 +1,13 @@
 <html>
 <head>
+	<link rel="stylesheet" type="text/css" href="transitions.css"></link>
 	<script src="lib/jquery-2.0.0.js"></script>
 	<script src="lib/sylvester.js"></script>
 	<script src="lib/tween.js"></script>
 	<script src="src/tweenMatrix3DPlugin.js"></script>
 	<script src="src/transitions.js"></script>
-	<style type="text/css">
-		div[data-role="page"] {
-			top: 0; 
-			left: 0; 
-			width: 100%; 
-			min-height: 100%; 
-			position: absolute; 
-			display: none; 
-			border: 0;
-		}
-		
-		div[data-role="page"].ui-page-active { 
-			display: block; 
-			overflow: visible; 
-		}
-	</style>
 </head>
-<body>
+<body style="overflow:hidden">
 	<div data-role="page" id="page0" style="background-color:red">
 		<h1>Page 1</h1>
 		<a href="#" id="next">Next</a>
@@ -50,12 +35,26 @@
 	</div>
 	
 	<script>
+		String.prototype.repeat = function(num) {
+			return new Array(num + 1).join(this);
+		};
+
 		var numPages,
 			started,
 			$prev,
+			TRANSITION_TYPE = 'css',
 			transitionNames = Object.keys(window.transitions);
 			
+		if (TRANSITION_TYPE == 'tween') {
+		  var cssTweener = createjs.CSSPlugin,
+		      transformer = createjs.Matrix3DPlugin;
+		  
+		  createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
+		  transformer.install(createjs.Tween);
+		}
+		
 		transitionNames.splice(transitionNames.indexOf('none'), 1);
+		transitionNames.splice(transitionNames.indexOf('zoomIn'), 1); // for now
 		$(function() {
 			numPages = $('[data-role="page"]').length;
 			$('[data-role="page"]').each(function() {
@@ -73,18 +72,24 @@
 				$prevBtn.on('click', function() {
 					loadPage($prevPage);
 				});			
+				
+				/*
+				var p = document.createElement('p');
+				p.innerText = "blah blah ".repeat(2000);
+				$this.append(p);
+				*/
 			});
 			
 			loadPage($('#page0'));
 		});
 		
-		function randomTransition() {
-			return window.transitions[transitionNames[parseInt(Math.random() * transitionNames.length)]];
-			//return transitions.skewRight;
+		function randomTransition(type) {
+			return window.transitions[transitionNames[parseInt(Math.random() * transitionNames.length)]][type || TRANSITION_TYPE];
+			//return transitions.zoomIn[type || TRANSITION_TYPE];
 		}
 
 		function loadPage($page) {
-			transition($prev && $prev[0], $page[0], started ? randomTransition() : transitions.none);
+			transition[TRANSITION_TYPE]($prev && $prev[0], $page[0], started ? randomTransition(TRANSITION_TYPE) : transitions.none[TRANSITION_TYPE]);
 			$prev = $page;
 			started = true;
 		}
