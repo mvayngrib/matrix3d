@@ -1,0 +1,94 @@
+<html>
+<head>
+	<script src="lib/jquery-2.0.0.js"></script>
+	<script src="lib/sylvester.js"></script>
+	<script src="lib/tween.js"></script>
+	<script src="src/tweenMatrix3DPlugin.js"></script>
+	<script src="src/transitions.js"></script>
+	<style type="text/css">
+		div[data-role="page"] {
+			top: 0; 
+			left: 0; 
+			width: 100%; 
+			min-height: 100%; 
+			position: absolute; 
+			display: none; 
+			border: 0;
+		}
+		
+		div[data-role="page"].ui-page-active { 
+			display: block; 
+			overflow: visible; 
+		}
+	</style>
+</head>
+<body>
+	<div data-role="page" id="page0" style="background-color:red">
+		<h1>Page 1</h1>
+		<a href="#" id="next">Next</a>
+		<a href="#" id="prev">Prev</a>
+	</div>
+	<div data-role="page" id="page1" style="background-color:green">
+		<h1>Page 2</h1>
+		<a href="#" id="next">Next</a>
+		<a href="#" id="prev">Prev</a>
+	</div>
+	<div data-role="page" id="page2" style="background-color:blue">
+		<h1>Page 3</h1>
+		<a href="#" id="next">Next</a>
+		<a href="#" id="prev">Prev</a>
+	</div>
+	<div data-role="page" id="page3" style="background-color:yellow">
+		<h1>Page 4</h1>
+		<a href="#" id="next">Next</a>
+		<a href="#" id="prev">Prev</a>
+	</div>
+	<div data-role="page" id="page4" style="background-color:purple">
+		<h1>Page 5</h1>
+		<a href="#" id="next">Next</a>
+		<a href="#" id="prev">Prev</a>
+	</div>
+	
+	<script>
+		var numPages,
+			started,
+			$prev,
+			transitionNames = Object.keys(window.transitions);
+			
+		transitionNames.splice(transitionNames.indexOf('none'), 1);
+		$(function() {
+			numPages = $('[data-role="page"]').length;
+			$('[data-role="page"]').each(function() {
+				var pageNum = parseInt(this.id.slice(4)),
+					$this = $(this),
+					$nextBtn = $this.find('#next'),
+					$nextPage = $('#page' + ((pageNum + 1) % numPages)),
+					$prevBtn = $this.find('#prev'),
+					$prevPage = $('#page' + ((pageNum + numPages - 1) % numPages));
+				
+				$nextBtn.on('click', function() {
+					loadPage($nextPage);
+				});
+
+				$prevBtn.on('click', function() {
+					loadPage($prevPage);
+				});			
+			});
+			
+			loadPage($('#page0'));
+		});
+		
+		function randomTransition() {
+			return window.transitions[transitionNames[parseInt(Math.random() * transitionNames.length)]];
+			//return transitions.skewRight;
+		}
+
+		function loadPage($page) {
+			transition($prev && $prev[0], $page[0], started ? randomTransition() : transitions.none);
+			$prev = $page;
+			started = true;
+		}
+
+	</script>
+</body>
+</html>
