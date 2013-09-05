@@ -285,26 +285,31 @@
 		}
 	}
 
+	if (window.createjs) {
+    createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
+    if (createjs.Matrix3DPlugin)
+      createjs.Matrix3DPlugin.install(createjs.Tween);
+  //    cssTweener.install(createjs.Tween);         
+	}
+	
+	if (window.Matrix) {
+    Matrix.prototype.scale = function() {
+      if (!this.isSquare())
+        throw "only a square matrix can be scaled uniformly";
+        
+      var rows = this.rows(),
+        m = Matrix.Zero(rows, rows),
+        elements = m.elements;
+        
+      for (var i = 0; i < rows; i++) {
+        m.elements[i][i] = arguments[i] || 1;
+      }
+      
+      return this.multiply(m);
+    };
+	}
+	
 //	cssTweener = createjs.CSSPlugin;
-//	transformer = createjs.Matrix3DPlugin;			
-//	createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
-//	transformer.install(createjs.Tween);
-////		cssTweener.install(createjs.Tween);
-//			 
-//	Matrix.prototype.scale = function() {
-//		if (!this.isSquare())
-//			throw "only a square matrix can be scaled uniformly";
-//			
-//		var rows = this.rows(),
-//			m = Matrix.Zero(rows, rows),
-//			elements = m.elements;
-//			
-//		for (var i = 0; i < rows; i++) {
-//			m.elements[i][i] = arguments[i] || 1;
-//		}
-//		
-//		return this.multiply(m);
-//	};
 
 	function translation(x, y, z) {
 		var i = identity(true);
@@ -416,7 +421,7 @@
 	
 	function setTransform(el, matrix) {
 		setStylePropertyValues(el.style, {
-		  transform: transformer.toMatrix3DString(matrix)
+		  transform: createjs.Matrix3DPlugin.toMatrix3DString(matrix)
 		});
 	}
 
