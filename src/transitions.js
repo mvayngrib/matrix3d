@@ -22,11 +22,11 @@
 			none: {
 	      tween: {
   				fromPageTransition: function() {
-  					return identityMatrix;
+  					return identity();
   					//return identityTransition(); // reuse
   				},
   				toPageBeforeTransition: function() {
-  					return identityMatrix;
+  					return identity();
   					//return identityTransition();
   				}
 	      },
@@ -114,7 +114,7 @@
 			zoomIn: {
 			  tween: {
   				fromPageTransition: function() {
-  					return identityMatrix;
+  					return identity();
   				},
   				toPageBeforeTransition: function() {
   					return scale(0, 0);
@@ -266,7 +266,7 @@
 	var defaults = {
 	  tween: {
     	defaultToPageTransition: function(to) {
-    		return identityMatrix;
+    		return identity();
     	}
 	  },
 	  css : {
@@ -307,7 +307,7 @@
 //	};
 
 	function translation(x, y, z) {
-		var i = identity();
+		var i = identity(true);
 		i.elements[3] = [x || 0, y || 0, z || 0, 1];
 		return i;
 	}
@@ -380,7 +380,7 @@
 	}
 
 	function position(what, where) {
-		var matrix = identity();
+		var matrix = identity(true);
 		for (var i = 0; i < arguments.length; i++) {
 			matrix.elements[3][i] = arguments[i];
 		}
@@ -389,7 +389,7 @@
 	}
 
 	function scale(/*x, y, z*/) {
-		var matrix = identity();
+		var matrix = identity(true);
 		for (var i = 0; i < arguments.length; i++) {
 			matrix.elements[i][i] = arguments[i];
 		}
@@ -410,12 +410,12 @@
 		]);
 	}
 
-	function identity() {
-	  return identityMatrix || (identityMatrix = Matrix.I(4));
+	function identity(newCopy) {
+	  return newCopy ? Matrix.I(4) : identityMatrix || (identityMatrix = Matrix.I(4));
 	}
 	
 	function setTransform(el, matrix) {
-		transformer.setStylePropertyValues(el.style, {
+		setStylePropertyValues(el.style, {
 		  transform: transformer.toMatrix3DString(matrix)
 		});
 	}
