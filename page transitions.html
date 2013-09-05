@@ -42,15 +42,12 @@
 		var numPages,
 			started,
 			$prev,
-			TRANSITION_TYPE = 'css',
+			TRANSITION_TYPE = 'tween',
 			transitionNames = Object.keys(window.transitions);
 			
 		if (TRANSITION_TYPE == 'tween') {
-		  var cssTweener = createjs.CSSPlugin,
-		      transformer = createjs.Matrix3DPlugin;
-		  
 		  createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
-		  transformer.install(createjs.Tween);
+		  createjs.Matrix3DPlugin.install(createjs.Tween);
 		}
 		
 		transitionNames.splice(transitionNames.indexOf('none'), 1);
